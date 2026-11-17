@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: podinfo
+  namespace: argocd
+spec:
+  project: default
+  source:
+    chart: podinfo
+    repoURL: https://stefanprodan.github.io/podinfo
+    targetRevision: 6.17.0
+    helm:
+      valueFiles:                       #1. We can defind multiple values files for different environments
+        - values-prod.yaml
+      releaseName: podinfo
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: default
