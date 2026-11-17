@@ -11,7 +11,8 @@ spec:
     targetRevision: 6.17.0
     helm:
       valueFiles:                       #1. We can defind multiple values files for different environments
-        - values-prod.yaml
+        - values-prod.yaml              # [Production values file.]
+      ignoreMissingValueFiles: true     # 2. Safe gaurd to ignore missing values files. If set to false, ArgoCD will fail the sync if the values file is missing.
       releaseName: podinfo
   destination:
     server: "https://kubernetes.default.svc"
