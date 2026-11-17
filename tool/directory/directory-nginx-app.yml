@@ -18,3 +18,6 @@ spec:
       include: '*.yaml'                                               # 5. [List of files to include ]This is used to include specific files or directories. You can use wildcards to include specific files or directories.                 
     repoURL: https://github.com/neerajkori/argocd.git
     targetRevision: HEAD
+  syncPolicy:
+    automated: {}
+
