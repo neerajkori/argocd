@@ -10,10 +10,17 @@ spec:
     repoURL: https://stefanprodan.github.io/podinfo
     targetRevision: 6.17.0
     helm:
-      valueFiles:                       #1. We can defind multiple values files for different environments
-        - values-prod.yaml              # [Production values file.]
-      ignoreMissingValueFiles: true     # 2. Safe gaurd to ignore missing values files. If set to false, ArgoCD will fail the sync if the values file is missing.
-      releaseName: podinfo
+      valueFiles:                       #1. We can defind multiple values files for different environments. # [Production values file.]
+        - values-prod.yaml              
+      parameters:                       #2. We can override values in the values file using parameters.
+        - name: "service.type"
+          value: LoadBalancer
+      releaseName: podinfo-test-release #3. We can define a custom release name for the helm chart. If not defined, the release name will be the same as the application name.
+      passCredentials: true             #4. If set to true, ArgoCD will pass the credentials to the helm chart. This is useful if the helm chart requires access to a private registry.
+      skipCrds: true                    #5. If set to true, ArgoCD will skip the installation of CRDs. This is useful if the helm chart has already installed the CRDs.
+      skipSchemaValidation: false       #6. If set to true, ArgoCD will skip the schema validation of the helm chart. This is useful if the helm chart has a custom schema.
+      skipTests: false                   #7. If set to true, ArgoCD will skip the tests defined in the helm chart. This is useful if the helm chart has tests that are not relevant to the application.
+      ignoreMissingValueFiles: true     #8. Safe gaurd to ignore missing values files. If set to false, ArgoCD will fail the sync if the values file is missing.
   destination:
     server: "https://kubernetes.default.svc"
     namespace: default

@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: podinfo
+  namespace: argocd
+spec:
+  project: default
+  source:
+    chart: podinfo
+    repoURL: https://stefanprodan.github.io/podinfo
+    targetRevision: 6.17.0
+    helm:
+      valuesObject:
+        hpa:
+          enabled: true
+          maxReplicas: 5
+          cpu: 80               # Average total CPU usage percentage per pod (1-100)
+          memory: 256Mi         # Average memory usage per pod (e.g., 100Mi-1Gi)
+          requests: 10          # Average HTTP requests per second per pod
+      ignoreMissingValueFiles: true     
+      releaseName: podinfo
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: default
