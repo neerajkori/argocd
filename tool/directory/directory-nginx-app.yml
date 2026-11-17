@@ -2,6 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: nginx
+  namespace: argocd
 spec:
   destination:
     namespace: default
@@ -9,5 +10,11 @@ spec:
   project: default
   source:
     path: tool/directory
+    directory:
+      # include: 'some-directory/*'                                   # 1. [This is for any custom direcoty. ]This is used to include all files in a directory. You can use wildcards to include specific files or directories.
+      disableExtensionFilter: false                                   # 2. [if true, can add files with any extension ]This is used to disable the extension filter, which allows you to include files with any extension.
+      recurse: false                                                  # 3. [if true, can add files in subdirectories ]This is used to recurse into subdirectories, which allows you to include files in subdirectories.
+      exclude: '{directory-guestbook-app.yml,directory-nginx-app.yml}' # 4. [List of files to exclude ]
+      include: '*.yaml'                                               # 5. [List of files to include ]This is used to include specific files or directories. You can use wildcards to include specific files or directories.                 
     repoURL: https://github.com/neerajkori/argocd.git
     targetRevision: HEAD
