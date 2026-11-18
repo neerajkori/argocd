@@ -103,3 +103,10 @@ argocd-server: v3.6.1
   Kubectl Version: v0.37.0
   Jsonnet Version: v0.22.0
 ```
+### Distributing the Plugins
+
+Since Argo CD CLI plugins are standalone executables, you can package and distribute them across different operating systems using native package formats and repositories:
+
+* **Debian / Ubuntu (`apt`):** Package the executable as a `.deb` archive (using tools like `dpkg-deb` or `nfpm`) and host it in an APT repository.
+* **RHEL / CentOS / Fedora (`yum` / `dnf`):** Package the executable as an `.rpm` archive (using `rpmbuild` or `nfpm`) and publish it to a YUM/DNF repository.
+* **macOS / Linux (`brew`):** Create a Homebrew formula pointing to your release tarball or binary and distribute it via a custom Homebrew tap.
