@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Check if the argocd CLI is installed
+if ! command -v argocd &> /dev/null; then
+    echo "Error: Argo CD CLI (argocd) is not installed. Please install it first."
+    exit 1
+fi
+
+if [[ "$1" == "version" ]]
+then
+    echo "I am a test plugin & displaying argocd version..."
+    argocd version
+    exit 0
+fi
+
+
+echo "I am a test plugin & displaying argocd version..."

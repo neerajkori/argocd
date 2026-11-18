@@ -1,0 +1,51 @@
+1. Create a binary or script prefixing argocd- . Example is given below.
+vim argocd-test-plugin
+#!/bin/bash
+
+# Check if the argocd CLI is installed
+if ! command -v argocd &> /dev/null; then
+    echo "Error: Argo CD CLI (argocd) is not installed. Please install it first."
+    exit 1
+fi
+
+if [[ "$1" == "version" ]]
+then
+    echo "I am a test plugin & displaying argocd version..."
+    argocd version
+    exit 0
+fi
+
+
+echo "I am a test plugin & displaying argocd version..."
+
+2. Provide Execute permission to this binary.
+adminuser@IN-CS7MR24:~/argocd/plugins$ chmod +x argocd-test-plugin
+3. Move binary to the system path
+adminuser@IN-CS7MR24:~/argocd/plugins$ sudo mv argocd-test-plugin /usr/local/bin/
+4. test the plugin.
+adminuser@IN-CS7MR24:~/argocd/plugins$ argocd test-plugin
+I am a test plugin & displaying argocd version...
+5. test with plugin arguments.
+adminuser@IN-CS7MR24:~/argocd/plugins$ argocd test-plugin version
+I am a test plugin & displaying argocd version...
+argocd: v3.4.5+564b949
+  BuildDate: 2026-07-09T16:40:03Z
+  GitCommit: 564b94973b284b8de98da7cee6eeade2cb941e46
+  GitTreeState: clean
+  GoVersion: go1.26.0
+  Compiler: gc
+  Platform: linux/amd64
+Handling connection for 8080
+Handling connection for 8080
+argocd-server: v3.6.1
+  BuildDate: 2026-11-04T13:24:46Z
+  GitCommit: 94037c4d4e1af4bd0651d37a179fbd9e347e668c
+  GitTreeState: clean
+  GitTag: v3.6.1
+  GoVersion: go1.27.3
+  Compiler: gc
+  Platform: linux/amd64
+  Kustomize Version: v5.8.3 2026-10-08T11:37:56Z
+  Helm Version: v4.3.1+gc0d08d0
+  Kubectl Version: v0.37.0
+  Jsonnet Version: v0.22.0
