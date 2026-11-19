@@ -13,7 +13,7 @@ spec:
     directory:
       disableExtensionFilter: false                                   
       recurse: false                                                  
-      exclude: '{auto-sync-app.yml}'                                  
+      exclude: '{auto-sync-app.yml,auto-prune-app.yml,auto-selfheal-app.yml}'                                  
       include: '*.yaml'                                               
     repoURL: https://github.com/neerajkori/argocd.git
     targetRevision: HEAD
