@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: podinfo
+  namespace: argocd
+spec:
+  project: default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  sources:
+    - repoURL: https://github.com/neerajkori/podinfo.git
+      path: .
+      targetRevision: HEAD
+      helm:
+        valueFiles:
+          - $values/multiple_source_app/values-prod-podinfo.yaml
+    - repoURL: https://github.com/neerajkori/argocd.git
+      targetRevision: HEAD
+      ref: values
