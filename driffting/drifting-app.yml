@@ -5,7 +5,7 @@ metadata:
   namespace: argocd
   metadata:
   annotations:
-    argocd.argoproj.io/compare-options: ServerSideDiff=true            # Enable server-side diff for this application , Global option can be set in argocd-cm configmap
+    argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true           # Enable server-side diff & mutation webhook for this application , Global option can be set in argocd-cm configmap
 spec:
   destination:
     namespace: default
