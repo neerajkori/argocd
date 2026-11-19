@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nginx
+  namespace: argocd
+spec:
+  destination:
+    namespace: default
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: auto_sync
+    directory:
+      disableExtensionFilter: false                                   
+      recurse: false                                                  
+      exclude: '{auto-sync-app.yml}'                                  
+      include: '*.yaml'                                               
+    repoURL: https://github.com/neerajkori/argocd.git
+    targetRevision: HEAD
+  syncPolicy:
+    automated: {}
