@@ -18,4 +18,5 @@ spec:
     repoURL: https://github.com/neerajkori/argocd.git
     targetRevision: HEAD
   syncPolicy:
-    automated: {}
+    automated: 
+      enabled: true
