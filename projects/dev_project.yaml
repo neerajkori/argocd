@@ -17,4 +17,11 @@ spec:
   - group: ''
     kind: Namespace
     name: kube-*
+  roles:
+  - name: dev-project-role 
+    description: This project role is for the dev team. It allows them to create and manage applications within the `argo-dev` project.
+    groups:
+    - some-user
+    policies:
+    - p, proj:argo-dev:dev-project-role, applications, *, argo-dev/*, allow
   
