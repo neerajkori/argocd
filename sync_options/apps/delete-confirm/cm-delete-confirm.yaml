@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: delete-confirm-cm
+  namespace: default
+  annotations:
+    argocd.argoproj.io/sync-options: Delete=confirm
+data:
+  demo: delete-confirm-app

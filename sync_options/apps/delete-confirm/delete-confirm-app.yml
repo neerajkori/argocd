@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: delete-confirm
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/neerajkori/argocd.git
+    targetRevision: HEAD
+    path: sync_options/apps/delete-confirm
+    directory:
+      disableExtensionFilter: false
+      recurse: false
+      exclude: '{delete-confirm-app.yaml}'                                     
+      include: '*.yaml'                                               
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated: {}
+    syncOptions:
+    - Delete=confirm
