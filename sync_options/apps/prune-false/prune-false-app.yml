@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: prune-false
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/neerajkori/argocd.git
+    targetRevision: HEAD
+    path: sync_options/apps/prune-false
+    directory:
+      disableExtensionFilter: false
+      recurse: false
+      exclude: '{prune-false-app.yaml}'                                     
+      include: '*.yaml'                                               
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated: {}
+    syncOptions:
+    - Prune=false

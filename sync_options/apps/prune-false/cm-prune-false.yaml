@@ -1,8 +1,8 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: cm-noprune
-  namespace: team1-kndev
+  name: prune-false-cm
+  namespace: default
   annotations:
     argocd.argoproj.io/sync-options: Prune=false
 data:

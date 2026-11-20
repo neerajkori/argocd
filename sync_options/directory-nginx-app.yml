@@ -5,15 +5,15 @@ metadata:
   namespace: argocd
 spec:
   destination:
-    namespace: team1-kndev 
+    namespace: testsyncops
     server: https://kubernetes.default.svc
-  project: argo-dev
+  project: default
   source:
-    path: projects
+    path: sync_options
     directory:
       # include: 'some-directory/*'                                   
       disableExtensionFilter: false   
-      exclude: '{dev_project.yaml,directory-nginx-app.yml,remove_permission_defaultproj.yml}'                               
+      exclude: '{apps/**,cm-*}'                               
       recurse: false                                                  
       include: '*.yaml'                                               
     repoURL: https://github.com/neerajkori/argocd.git
@@ -21,5 +21,5 @@ spec:
   syncPolicy:
     automated: {}
     syncOptions:
-    - CreateNamespace=true
+    - CreateNamespace=true              #[This will create the namespace if it does not exist on the target cluster]
 

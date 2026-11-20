@@ -4,6 +4,7 @@ metadata:
   labels:
     run: nginx
   name: nginx
+  argocd.argoproj.io/sync-options: Prune=false
 spec:
   ports:
   - port: 80
