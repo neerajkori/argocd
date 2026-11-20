@@ -21,3 +21,48 @@ This directory holds **Argo CD AppProjects** (the access/security scopes that ap
 
 - `dev_project.yaml` is the file being actively worked on right now (modified per git).
 - Observation: the Service selector (`run: nginx`) does not match the Deployment pod labels (`app: nginx`) as written — the Service would not select those pods until the selector is aligned.
+
+## Deployment steps (implementation)
+
+To deploy the applications in this directory, apply them against your Argo CD instance in this order.
+
+### Prerequisites
+
+- Argo CD installed in the `argocd` namespace and the `argocd` CLI available.
+- Logged in to the server (for a local server, port-forward and log in, as in the other guides):
+  ```bash
+  kubectl port-forward svc/argocd-server -n argocd 8080:443 &
+  ARGOCD_PWD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
+  argocd login localhost:8080 --username admin --password "$ARGOCD_PWD" --insecure
+  ```
+
+### Steps
+
+1. **Create the `argo-dev` AppProject** so the `nginx` Application has a project to belong to (Argo CD validates the app's project on sync):
+   ```bash
+   kubectl apply -f projects/dev_project.yaml -n argocd
+   ```
+   This grants destinations to `team1-kndev` on the default cluster, allows only this repo in `sourceRepos`, and adds the `argo-dev` applications role for the `dev-project-role`/`some-user` group.
+
+2. **(Optional) Harden the built-in `default` project** — clear its `sourceRepos`/`destinations` and add the namespace blacklist, so nothing deploys into the default project:
+   ```bash
+   kubectl apply -f projects/remove_permission_defaultproj.yml -n argocd
+   ```
+
+3. **Deploy the `nginx` Application** — it sources `projects/` (the `nginx-deployment.yaml` + `nginx-svc.yaml` above) and syncs them to `team1-kndev`. `CreateNamespace=true` creates that namespace during the sync:
+   ```bash
+   kubectl apply -f projects/directory-nginx-app.yml -n argocd
+   ```
+
+4. **Verify the deployment**:
+   ```bash
+   argocd app get nginx          # status, sync state, health
+   argocd app sync nginx         # manual sync (automated sync is also enabled, so it follows Git)
+   kubectl get all -n team1-kndev
+   ```
+
+### Notes on the steps
+
+- Order matters: `dev_project.yaml` must be applied before `directory-nginx-app.yml`, because the Application references `project: argo-dev`.
+- The Application's directory source excludes the project definitions themselves, so Argo CD does not try to deploy them as workloads.
+- Because the project destination allows only `team1-kndev` (whitelist `team1-*`), the app cannot deploy elsewhere, and the `kube-*` blacklist keeps system namespaces out.
