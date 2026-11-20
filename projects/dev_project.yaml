@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: argo-dev
+  namespace: argocd
+spec:
+  destinations:
+  - namespace: team1-kndev
+    server: https://kubernetes.default.svc
+  sourceRepos:
+  - https://github.com/neerajkori/argocd.git
+  clusterResourceWhitelist:
+  - group: ''
+    kind: Namespace
+    name: team1-*
+  clusterResourceBlacklist:
+  - group: ''
+    kind: Namespace
+    name: kube-*
+  
