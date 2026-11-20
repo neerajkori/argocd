@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: prune-confirm
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/neerajkori/argocd.git
+    targetRevision: HEAD
+    path: sync_options/apps/prune-confirm
+    directory:
+      disableExtensionFilter: false
+      recurse: false
+      exclude: '{prune-confirm-app.yaml}'                                     
+      include: '*.yaml'                                               
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated: {}
+    syncOptions:
+    - Prune=confirm
