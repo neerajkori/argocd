@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cm-ssa
+  namespace: team1-kndev
+data:
+  demo: server-side-apply-app

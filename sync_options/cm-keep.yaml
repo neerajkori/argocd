@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cm-keep
+  namespace: team1-kndev
+data:
+  demo: delete-false-app

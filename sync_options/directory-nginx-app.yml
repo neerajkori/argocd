@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nginx
+  namespace: argocd
+spec:
+  destination:
+    namespace: team1-kndev 
+    server: https://kubernetes.default.svc
+  project: argo-dev
+  source:
+    path: projects
+    directory:
+      # include: 'some-directory/*'                                   
+      disableExtensionFilter: false   
+      exclude: '{dev_project.yaml,directory-nginx-app.yml,remove_permission_defaultproj.yml}'                               
+      recurse: false                                                  
+      include: '*.yaml'                                               
+    repoURL: https://github.com/neerajkori/argocd.git
+    targetRevision: HEAD
+  syncPolicy:
+    automated: {}
+    syncOptions:
+    - CreateNamespace=true
+

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cm-oos
+  namespace: team1-kndev
+data:
+  demo: apply-out-of-sync-only-app

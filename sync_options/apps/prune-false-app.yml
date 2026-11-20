@@ -1,0 +1,16 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: prune-false-demo
+  namespace: argocd
+spec:
+  project: argo-dev
+  source:
+    repoURL: https://github.com/neerajkori/argocd.git
+    targetRevision: HEAD
+    path: sync_options
+    directory:
+      include: 'cm-noprune.yaml'
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: team1-kndev
