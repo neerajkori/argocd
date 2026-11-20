@@ -1,25 +1,32 @@
 apiVersion: argoproj.io/v1alpha1
-kind: Application
+kind: ApplicationSet
 metadata:
-  name: nginx
+  name: sync-options
   namespace: argocd
 spec:
-  destination:
-    namespace: testsyncops
-    server: https://kubernetes.default.svc
-  project: default
-  source:
-    path: sync_options
-    directory:
-      # include: 'some-directory/*'                                   
-      disableExtensionFilter: false   
-      exclude: '{apps/**,cm-*}'                               
-      recurse: false                                                  
-      include: '*.yaml'                                               
-    repoURL: https://github.com/neerajkori/argocd.git
-    targetRevision: HEAD
-  syncPolicy:
-    automated: {}
-    syncOptions:
-    - CreateNamespace=true              #[This will create the namespace if it does not exist on the target cluster]
-
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+  - git:
+      repoURL: https://github.com/neerajkori/argocd.git
+      revision: HEAD
+      directories:
+      - path: sync_options/apps/*
+  template:
+    metadata:
+      name: '{{.path.basename}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/neerajkori/argocd.git
+        targetRevision: HEAD
+        path: '{{.path.path}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: sync-options
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true
