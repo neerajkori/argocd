@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: delete-false-cm
+  namespace: default
+  annotations:
+    argocd.argoproj.io/sync-options: Delete=false
+data:
+  demo: delete-false-app
