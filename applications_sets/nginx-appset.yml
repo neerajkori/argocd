@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: podinfo
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+  - list:
+      elements:
+      - cluster: minikube
+        url: https://kubernetes.default.svc   #[minikube ip] or [kubectl cluster-info] to get the url of the cluster
+      - cluster: stg
+        url: https://kubernetes.default.svc   #[Stage cluster url] or [kubectl cluster-info] to get the url of the cluster
+  template:
+    metadata:
+      name: '{{.cluster}}-podinfo'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/neerajkori/podinfo.git # source repo of the application
+        targetRevision: HEAD
+        path: .
+      destination:
+        server: '{{.url}}'
+        namespace: default
+      syncPolicy:
+        automated:
+          enabled: true
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true            #[Create namespace if it doesn't exist on the remote cluster for application deployment]
