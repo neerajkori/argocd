@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: cm-prune-last
-  namespace: team1-kndev
-data:
-  demo: prune-last-app

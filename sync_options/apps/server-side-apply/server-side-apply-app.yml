@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: server-side-apply
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/neerajkori/argocd.git
+    targetRevision: HEAD
+    path: sync_options/apps/server-side-apply
+    directory:
+      disableExtensionFilter: false
+      recurse: false
+      exclude: '{server-side-apply-app.yml}'
+      include: '*.yaml'
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated: {}
+    syncOptions:
+    - ServerSideApply=true

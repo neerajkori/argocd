@@ -1,19 +1,23 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: apply-out-of-sync-only-demo
+  name: replace-true
   namespace: argocd
 spec:
-  project: argo-dev
+  project: default
   source:
     repoURL: https://github.com/neerajkori/argocd.git
     targetRevision: HEAD
-    path: sync_options
+    path: sync_options/apps/replace-true
     directory:
-      include: 'cm-oos.yaml'
+      disableExtensionFilter: false
+      recurse: false
+      exclude: '{replace-true-app.yml}'
+      include: '*.yaml'
   destination:
     server: https://kubernetes.default.svc
-    namespace: team1-kndev
+    namespace: default
   syncPolicy:
+    automated: {}
     syncOptions:
-      - ApplyOutOfSyncOnly=true
+    - Replace=true

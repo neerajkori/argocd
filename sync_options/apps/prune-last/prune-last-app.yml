@@ -1,19 +1,23 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: server-side-apply-demo
+  name: prune-last
   namespace: argocd
 spec:
-  project: argo-dev
+  project: default
   source:
     repoURL: https://github.com/neerajkori/argocd.git
     targetRevision: HEAD
-    path: sync_options
+    path: sync_options/apps/prune-last
     directory:
-      include: 'cm-ssa.yaml'
+      disableExtensionFilter: false
+      recurse: false
+      exclude: '{prune-last-app.yml}'
+      include: '*.yaml'
   destination:
     server: https://kubernetes.default.svc
-    namespace: team1-kndev
+    namespace: default
   syncPolicy:
+    automated: {}
     syncOptions:
-      - ServerSideApply=true
+    - PruneLast=true

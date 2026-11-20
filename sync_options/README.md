@@ -25,46 +25,58 @@ metadata:
     argocd.argoproj.io/sync-options: Prune=false,Replace=true
 ```
 
-## Examples in this directory
+## Directory structure
 
-| Application | Resource | Option | What it demos |
+Each concept gets its own directory under `apps/`:
+
+- `<concept>-app.yml` — the **Application** manifest (registers the app with Argo CD)
+- `cm-<concept>.yaml` — a **ConfigMap** resource the app deploys (the learning resource for the option)
+- `nginx-deployment.yaml` / `nginx-svc.yaml` — the standard nginx workload files
+
+## Concepts and their options
+
+| Directory | Option | Resource file | Notes |
 |---|---|---|---|
-| `apps/create-namespace-app.yml` | `cm-create-ns` | `CreateNamespace=true` | Creates `spec.destination.namespace` (`team1-kndev`) during sync — run this first |
-| `apps/prune-last-app.yml` | `cm-prune-last` | `PruneLast=true` | Pruning happens as the final wave after everything else is healthy |
-| `apps/apply-out-of-sync-only-app.yml` | `cm-oos` | `ApplyOutOfSyncOnly=true` | During sync, only out-of-sync resources are applied |
-| `apps/server-side-apply-app.yml` | `cm-ssa` | `ServerSideApply=true` | Uses `kubectl apply --server-side --force-conflicts` instead of client-side apply |
-| `apps/delete-false-app.yml` | `cm-keep` | `Delete=false` | Resource is retained when the app is deleted (e.g. PVCs) |
-| `apps/prune-false-app.yml` | `cm-noprune` (annotation) | `Prune=false` | Resource is never pruned when it leaves the app source |
+| `apps/apply-out-of-sync/` | `ApplyOutOfSyncOnly=true` | `cm-apply-out-of-sync.yaml` | Only out-of-sync resources are applied during a sync |
+| `apps/create-namespace/` | `CreateNamespace=true` | `cm-create-namespace.yaml` | Destination namespace is created during sync if missing |
+| `apps/server-side-apply/` | `ServerSideApply=true` | `cm-server-side-apply.yaml` | Uses `kubectl apply --server-side --force-conflicts` instead of client-side apply |
+| `apps/prune-confirm/` | `Prune=confirm` | `cm-prune-confirm.yaml` | Pruning needs the `argocd.argoproj.io/deletion-approved: <ISO timestamp>` annotation on the resource |
+| `apps/prune-false/` | `Prune=false` | `cm-prune-false.yaml` | Resource is never pruned when it leaves the app source |
+| `apps/delete-confirm/` | `Delete=confirm` | `cm-delete-confirm.yaml` | Deleting on app deletion needs the confirmation annotation |
+| `apps/delete-false/` | `Delete=false` | `cm-delete-false.yaml` | Resource is retained when the app is deleted (e.g. PVCs) |
+| `apps/prune-last/` | `PruneLast=true` | `cm-prune-last.yaml` | Pruning happens as the final wave, after all other resources are healthy |
+| `apps/replace-true/` | `Replace=true` | `cm-replace-true.yaml` | `kubectl replace`/`create` is used instead of `apply` — destructive |
+| `apps/client-side-apply/` | `ClientSideApplyMigration=true` | `cm-client-side-apply.yaml` | Moves field ownership from client-side apply to Argo CD's manager (transition to server-side apply) |
 
 ## How to use them
 
 ```bash
-# Prerequisites: logged into Argo CD (see the projects/ guides).
+# Prerequisites: logged into Argo CD (see the projects/ guides)
 
-# 1. Create the namespace — the first app creates team1-kndev during its sync
-kubectl apply -f sync_options/apps/create-namespace-app.yml -n argocd
-argocd app sync create-namespace-demo
-argocd app get create-namespace-demo
-kubectl get ns team1-kndev
-
-# 2. Apply the other example apps
-kubectl apply -f sync_options/apps/prune-last-app.yml -n argocd
-kubectl apply -f sync_options/apps/apply-out-of-sync-only-app.yml -n argocd
-kubectl apply -f sync_options/apps/server-side-apply-app.yml -n argocd
-kubectl apply -f sync_options/apps/delete-false-app.yml -n argocd
-kubectl apply -f sync_options/apps/prune-false-app.yml -n argocd
-
-# 3. Verify what got deployed
-kubectl get cm -n team1-kndev
-argocd app get prune-last-demo
+# Example — create-namespace
+kubectl apply -f sync_options/apps/create-namespace/create-namespace-app.yml -n argocd
+argocd app sync create-namespace
+argocd app get create-namespace
+kubectl get cm -n default
 ```
 
-Order: `create-namespace-app` first, because the other apps target `team1-kndev` and that namespace doesn't exist until the first app's sync creates it.
+Repeat for the other concepts:
 
-Demos to try:
+```bash
+kubectl apply -f sync_options/apps/apply-out-of-sync/apply-out-of-sync-app.yml -n argocd
+kubectl apply -f sync_options/apps/server-side-apply/server-side-apply-app.yml -n argocd
+kubectl apply -f sync_options/apps/prune-confirm/prune-confirm-app.yml -n argocd
+kubectl apply -f sync_options/apps/prune-false/prune-false-app.yml -n argocd
+kubectl apply -f sync_options/apps/delete-confirm/delete-confirm-app.yml -n argocd
+kubectl apply -f sync_options/apps/delete-false/delete-false-app.yml -n argocd
+kubectl apply -f sync_options/apps/prune-last/prune-last-app.yml -n argocd
+kubectl apply -f sync_options/apps/replace-true/replace-true-app.yml -n argocd
+kubectl apply -f sync_options/apps/client-side-apply/client-side-apply-app.yml -n argocd
+```
 
-- **Prune=false**: remove `sync_options/cm-noprune.yaml` from the repo and push (Argo CD reads the repo HEAD), then `argocd app get prune-false-demo` — the app shows OutOfSync and `cm-noprune` is **not** deleted from the cluster, because pruning is skipped for it.
-- **Delete=false**: `kubectl delete -f sync_options/apps/delete-false-app.yml -n argocd`, then `kubectl get cm cm-keep -n team1-kndev` — it still exists after the app is deleted.
+To observe a sync option: `argocd app get <name>` (status, health), `kubectl get cm -n default`, and the Argo CD UI — the UI highlights resources that have sync options applied.
+
+To try confirmations: add/update the `argocd.argoproj.io/deletion-approved: <ISO timestamp>` annotation on the resource — the sync/delete then proceeds.
 
 ## Catalog of the sync options (from the Argo CD docs)
 
@@ -97,6 +109,6 @@ Demos to try:
 
 ## Notes
 
-- Pattern going forward: Application manifests under `apps/`, resources in the directory root.
+- Pattern going forward: one concept dir under `apps/` per option; Application manifests inside, resources next to them.
 - Resource-level options override app-level ones.
 - To change an option later: edit `spec.syncPolicy.syncOptions` (or the resource annotation) and `kubectl apply -f` the app again.

@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: cm-create-ns
-  namespace: team1-kndev
+  name: create-namespace-cm
+  namespace: default
 data:
   demo: create-namespace-app

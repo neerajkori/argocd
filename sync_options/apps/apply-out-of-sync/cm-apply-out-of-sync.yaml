@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: apply-out-of-sync-cm
+  namespace: default
+  annotations:
+    argocd.argoproj.io/sync-options: ApplyOutOfSyncOnly=true
+data:
+  demo: apply-out-of-sync-app

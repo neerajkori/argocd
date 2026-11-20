@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: client-side-apply-cm
+  namespace: default
+data:
+  demo: client-side-apply-app
