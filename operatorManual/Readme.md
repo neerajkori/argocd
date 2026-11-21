@@ -1,34 +1,27 @@
 # Argo CD Installation Guide
 
-Distilled from the official documentation:
-https://argo-cd.readthedocs.io/en/stable/operator-manual/installation/
+reference : https://argo-cd.readthedocs.io/en/stable/operator-manual/installation/
 
 All commands assume a configured `kubectl` (run `kubectl cluster-info` first).
-The manifest URLs below point to the `stable` branch of
-https://github.com/argoproj/argo-cd (reachability verified).
 
 ---
 
 ## 0. The two types of installations (summary)
 
-The docs define **two types of installations: multi-tenant and core.**
+**two types of installations: multi-tenant and core.**
 
 - **Multi-Tenant (the most common):** one Argo CD instance serving multiple
-  developer teams through the Web UI or the `argocd` CLI (`argocd login
-  <server-host>`). Manifests: `install.yaml` (non-HA, same-cluster GitOps
-  with cluster-admin), `namespace-install.yaml` (namespace-scoped), and the
-  HA variants of both.
-- **Core:** a headless GitOps engine — no API server, no Web UI — for cluster
-  administrators who don't need multi-tenancy. Manifest: `core-install.yaml`.
+  developer teams through the Web UI or the `argocd` CLI.
 
-Bundle contents, per the manifests in the repo (`manifests/install.yaml`,
-`manifests/namespace-install.yaml`, `manifests/core-install.yaml`):
+- **Core:** a headless GitOps engine — no API server, no Web UI — for cluster
+  administrators who don't need multi-tenancy. 
+
+Bundle contents, per the manifests:
 
 - `install.yaml`: API server + Web UI (`argocd-server`), Application
   Controller, ApplicationSet Controller, Repo Server, Redis, Dex (OIDC),
   Notifications Controller — all in ns `argocd` with cluster-admin RBAC.
-- `namespace-install.yaml`: same component set, but only namespace-level RBAC
-  (no cluster roles).
+- `namespace-install.yaml`: same component set, but only namespace-level RBAC.
 - `ha/install.yaml`, `ha/namespace-install.yaml`: same components, multiple
   replicas for the supported components (tuned for HA/resiliency).
 - `core-install.yaml`: Application Controller, ApplicationSet Controller,
@@ -42,11 +35,7 @@ Bundle contents, per the manifests in the repo (`manifests/install.yaml`,
 > use Argo CD to deploy applications in the same cluster that Argo CD runs
 > in… It will still be able to deploy to external clusters with inputted
 > credentials."
->
-> ⚠️ Note: "The ClusterRoleBinding in the installation manifest is bound to
-> a ServiceAccount in the argocd namespace. Be cautious when modifying the
-> namespace, as changing it may cause permission-related errors unless the
-> ClusterRoleBinding is correctly adjusted to reflect the new namespace."
+
 
 ### 1.1 Architecture
 
@@ -96,9 +85,6 @@ kubectl -n argocd wait --for=condition=available deployment/argocd-server --time
 kubectl -n argocd get pods
 
 # 4. Access the Web UI / API server
-#    (the manifest's argocd-server service exposes
-#     "http" on port 80 -> container port 8080, and
-#     "https" on port 443 -> container port 8080)
 kubectl -n argocd port-forward svc/argocd-server 8080:80
 #    → open http://localhost:8080 (the Web UI)
 
@@ -107,9 +93,6 @@ kubectl -n argocd get svc argocd-server -o jsonpath='{.status.loadBalancer.ingre
 
 # 5. Log in with the CLI
 argocd login localhost:8080 --insecure
-#    (if your server is on a different address or uses TLS, pass the address
-#     shown by `kubectl -n argocd get svc argocd-server`; run `argocd login --help`
-#     for the connection flags)
 
 #    Initial admin password (stored in the argocd-secret secret, username "admin"):
 kubectl -n argocd get secret argocd-secret -o jsonpath='{.data.password}' | base64 -d
@@ -122,16 +105,7 @@ kubectl -n argocd get secret argocd-secret -o jsonpath='{.data.password}' | base
 > "Installation of Argo CD which requires only namespace level privileges
 > (does not need cluster roles)… if you do not need Argo CD to deploy
 > applications in the same cluster that Argo CD runs in, and will rely solely
-> on inputted cluster credentials… An example of using this set of manifests
-> is if you run several Argo CD instances for different teams, where each
-> instance will be deploying applications to external clusters. It will still
-> be possible to deploy to the same cluster with provided credentials (i.e.
-> `argocd cluster add <CONTEXT> --in-cluster --namespace <YOUR NAMESPACE>`).
-> With the default roles included, you will only be able to deploy Argo CD
-> resources (Applications, ApplicationSets and AppProjects) in the same
-> cluster, as it's only supporting the GitOps mode with real deployments
-> being done to external clusters. You can modify that by defining new roles
-> and binding them to the `argocd-application-controller` service account."
+> on inputted cluster credentials… 
 >
 > 📌 Note: "Argo CD CRDs are not included into namespace-install.yaml and
 > have to be installed separately."
@@ -170,8 +144,7 @@ kubectl -n argocd get secret argocd-secret -o jsonpath='{.data.password}' | base
 └──────────────────────────────────────────────────────────┘
 
   📌 CRDs are NOT included in namespace-install.yaml:
-  kubectl apply --server-side --force-conflicts \
-    -k https://github.com/argoproj/argo-cd/manifests/crds?ref=stable
+  kubectl apply --server-side --force-conflicts -k https://github.com/argoproj/argo-cd/manifests/crds?ref=stable
 ```
 
 ### 2.2 Step-by-step
@@ -191,14 +164,6 @@ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/st
 
 # 3. Verify
 kubectl -n argocd get pods
-
-# 4. Notes (per the docs):
-#    - With the default roles you can manage Argo CD resources
-#      (Applications, ApplicationSets and AppProjects); real app
-#      deployments are done to EXTERNAL clusters:
-#        argocd cluster add <CONTEXT> --in-cluster --namespace <YOUR NAMESPACE>
-#    - To grant broader access, define new Roles and bind them to the
-#      `argocd-application-controller` service account.
 ```
 
 ---
@@ -261,15 +226,7 @@ kubectl -n argocd get pods
 ## 4. Argo CD Core — `core-install.yaml` (headless)
 
 > "The Argo CD Core installation is primarily used to deploy Argo CD in
-> headless mode. This type of installation is most suitable for cluster
-> administrators who independently use Argo CD and don't need multi-tenancy
-> features. This installation includes fewer components and is easier to set
-> up. The bundle does not include the API server or UI, and installs the
-> lightweight (non-HA) version of each component."
->
-> Per the Argo CD Core docs: no Argo CD RBAC model, no Argo CD API, no
-> notifications controller, no OIDC; CLI (`argocd login --core`) and Web UI
-> (`argocd admin dashboard -n argocd`) still usable.
+> headless mode.
 
 ### 4.1 Architecture
 
@@ -293,7 +250,7 @@ kubectl -n argocd get pods
 ### 4.2 Step-by-step
 
 ```bash
-# Install — the docs use a release tag (e.g. v2.7.0); "stable" is verified to work:
+# Install 
 kubectl create namespace argocd
 kubectl apply -n argocd --server-side --force-conflicts \
   -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/core-install.yaml
@@ -383,21 +340,6 @@ kubectl -n argocd get pods
 
 ---
 
-## 7. Version support
-
-For the support policy, see the
-[Release Process and Cadence documentation](https://argo-cd.readthedocs.io/en/stable/developer-guide/release-process-and-cadence/).
-
-Tested versions (Kubernetes versions tested with each Argo CD version):
-
-| Argo CD version | Kubernetes versions |
-| --- | --- |
-| 3.6 | v1.37, v1.36, v1.35, v1.34 |
-| 3.5 | v1.36, v1.35, v1.34, v1.33 |
-| 3.4 | v1.35, v1.34, v1.33, v1.32 |
-
----
-
 ## 8. Quick reference — which approach for which situation
 
 | # | Approach | Manifest(s) | Recommended when |
@@ -410,20 +352,3 @@ Tested versions (Kubernetes versions tested with each Argo CD version):
 | 6 | Helm | `argo-cd` chart | You manage the install via Helm |
 
 ---
-
-## 9. First-install suggestion (new learner)
-
-For your first experiment, most people:
-
-```bash
-kubectl create namespace argocd
-kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-kubectl -n argocd wait --for=condition=available deployment/argocd-server --timeout=300s
-kubectl -n argocd port-forward svc/argocd-server 8080:80
-# open http://localhost:8080
-```
-
-Then deploy one simple app (e.g. an "guestbook" style sample repo) through the
-UI or CLI to see the full GitOps flow. From there you can compare the other
-approaches side by side: try `namespace-install.yaml` (and note the extra CRD
-step), then an `ha/install.yaml` on a scratch cluster to see the replicas.
